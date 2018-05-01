@@ -56,7 +56,11 @@ ul {
 }
 .carousel 
 li {
-    float: left;
+    display:inline-block; 
+    /* 如果使用左浮动，那么li变长时，
+    其他元素会对齐上边界浮动，使用
+    inline-block可以使li元素一排
+    显示*/
     border: solid 1px #000;
     background-color: #fff;
     opacity: 0.5;
@@ -65,7 +69,7 @@ li {
 }
 .carousel 
 li:hover {
-    padding-bottom: 26px;
+    padding-top: 25px;
     opacity: 1;
     cursor: pointer;
 }
