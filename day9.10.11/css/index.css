@@ -158,6 +158,7 @@ em {
     padding-left: 22px;
     width: 270px;
     height: 50px;
+    margin-right: 24px;
     border: solid 1px #5A534D;
     background-color: rgba(0, 0, 0, .2);
     border-radius: 3%;
@@ -430,7 +431,7 @@ em {
 }
 .figures>div:nth-of-type(2n) {
     position: absolute;
-    width: 470px;
+    width: 471px;
     height: 340px;
     border-left: solid 1px #A8A8A8;
     border-right: solid 1px #A8A8A8;
