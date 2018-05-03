@@ -430,7 +430,7 @@ em {
 }
 .figures>div:nth-of-type(2n) {
     position: absolute;
-    width: 470px;
+    width: 471px;
     height: 340px;
     border-left: solid 1px #A8A8A8;
     border-right: solid 1px #A8A8A8;
