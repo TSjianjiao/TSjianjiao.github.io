@@ -11,56 +11,74 @@
 <body>
     <!-- 第一页 -->
     <div class="first-page">
-        <div class="title-text">
-            <p class="title-text-main">Hello World</p>
-            <p class="title-text-sub">China is speeding up strategic plan,standers,traffic rules,laws and regulations on accident-incurred lianolities for its smart car industry.Econmic information Daily reported Thursday.</p>
-        </div>
-        <div class="sign-up">
-            <div class="sign-up-title">
-                <p class="sign-up-title-main">CREATE YOUR ACCOUNT</p>
-                <p class="sign-up-title-sub">It is absolutely free</p>
+        <div class="title-text-main">Hello World</div>
+        <!-- 外面一层盒子是为了根据浏览器变化宽度
+        外面的盒子既是flex项也是flex容器，使里面的
+        p标签可以沿主轴排列，所以设置最大宽度不会像竖着
+        排列样不居中 -->
+        <div class="title-text-sub">
+            <p>China is speeding up strategic plan,standers,traffic rules,laws and regulations on accident-incurred lianolities for its smart car industry.Econmic information Daily reported Thursday.</p>
+        </div> 
+        <div class="sign-up-box">
+            <div class="sign-up">
+                <div class="sign-up-title">
+                    <p class="sign-up-title-main">CREATE YOUR ACCOUNT</p>
+                    <p class="sign-up-title-sub">It is absolutely free</p>
+                </div>
+                <div class="sign-box">
+                    <input type="email" value="denis@getcraftwork.com">
+                    <input type="text" value="Create your password">
+                    <button>SIGN UP</button>
+                </div>  
             </div>
-            <div class="sign-box">
-                 <input type="email" value="denis@getcraftwork.com">
-                <input type="text" value="Create your password">
-                <button>SIGN UP</button>
-            </div>  
         </div>
+        
     </div>
     <!-- 第二页 -->
     <div class="second-page">
-        <div class="introduction-title">
-            <p class="sub">BOATLOADS OF AWESOME</p>
-            <p class="main">Ready-made, customizable, HTML landing page sections</p>
+        <p class="introduction-title-sub">BOATLOADS OF AWESOME</p>
+        <div class="introduction-title-main">
+            <p>Ready-made, customizable, HTML landing page sections</p>       
         </div>
         <div class="introduction-detail">
             <div class="top-column">
                 <div class="mobile-first">
                     <div class="img"><img src="./images/IFE_0016_Iphone-Icon.png" alt="phone"></div>
-                    <p class="main">Mobile First</p>
-                    <p class="sub">All modulz are built mobile-first for maximum <br> 
-                        device compatibility.</p>               
+                    <div class="text">
+                        <p class="main">Mobile First</p>
+                        <p class="sub">All modulz are built mobile-first for maximum <br> 
+                        device compatibility.</p>
+                    </div>               
                 </div>
                 <div class="accessibility">
                     <div class="img"><img src="./images/IFE_0018_Check-Icon.png" alt=""></div>
-                    <p class="main">Accessibility</p>
-                    <p class="sub">Support for IE8, mobile and tablet devices,<br> 
+                    <div class="text">
+                        <p class="main">Accessibility</p>
+                        <p class="sub">Support for IE8, mobile and tablet devices,<br> 
                         screenreaders and color blind.</p>
+                    </div>
+                    
                 </div>
             </div>
             <div class="bottom-column">
                 <div class="fluid-typography">
                     <div class="img"><img src="./images/IFE_0017_Pencil-Icon.png" alt=""></div>
-                    <p class="main">Fluid Typography</p>
-                    <p class="sub">On different screen sizes, fonts<br> 
+                    <div class="text">
+                        <p class="main">Fluid Typography</p>
+                        <p class="sub">On different screen sizes, fonts<br> 
                         automagically scale with the viewport.</p> 
+                    </div>
+                    
                 </div>
                 <div class="customization">
                     <div class="img"><img src="./images/IFE_0019_Settings-Icon.png" alt=""></div>
-                    <p class="main">Customization</p>
-                    <p class="sub">Make any design your own using the Style<br> 
+                    <div class="text">
+                        <p class="main">Customization</p>
+                        <p class="sub">Make any design your own using the Style<br> 
                         Editor.Personalize fonts,colors,and layouts to<br> 
                         create the custom look you want.</p> 
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -81,6 +99,7 @@
                 <button class="right">Try product for Free</button>
             </div>
         </div>
+        <div class="ipad"></div>
     </div>
     <!-- 第四页 -->
     <div class="fourth-page">
@@ -125,13 +144,9 @@
     </div>
     <!-- 第六页 -->
     <div class="sixth-page">
-        <div class="sixth-title">
-            <div class="main">
-                <p>Our Awesome Crew</p> 
-            </div>
-            <div class="sub">
-                <p>Our unique online teaching style makes learning easy for everyone.Whether you are tying to land a new job,brush up on your skills.</p>
-            </div>
+        <p class="main">Our Awesome Crew</p> 
+        <div class="sub">
+            <p>Our unique online teaching style makes learning easy for everyone.Whether you are tying to land a new job,brush up on your skills.</p>
         </div>
         <div class="figures">
             <div class="mask-one">
@@ -147,8 +162,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="img-one">
-            </div>
+            <div class="img-one"></div>
             <div class="mask-two">
                 <div class="mask-title">
                     <p class="main">Ethan Dutton</p>
@@ -162,8 +176,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="img-two">
-            </div>
+            <div class="img-two"></div>
             <div class="mask-three">
                 <div class="mask-title">
                     <p class="main">Ethan Dutton</p>
