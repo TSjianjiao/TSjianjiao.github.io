@@ -181,7 +181,8 @@ em {
 .second-page {
     /* width: 1600px; */
     width: 1031px;
-    height: 506px;
+    height: 505px;
+    border-bottom: solid 1px #EAEAEA; 
     padding: 87px 292px 117px 277px;
     margin: 0 auto;
     color: #000;
@@ -431,7 +432,7 @@ em {
 }
 .figures>div:nth-of-type(2n) {
     position: absolute;
-    width: 471px;
+    width: 470px;
     height: 340px;
     border-left: solid 1px #A8A8A8;
     border-right: solid 1px #A8A8A8;
@@ -470,7 +471,7 @@ mask盒子的时候就只有个mask没有图片*/
 }
 .figures>div:nth-of-type(2n+1) {
     position: absolute;
-    width: 217px;
+    width: 216px;
     height: 139px;
     padding: 110px 128px 91px 128px ;
     background: rgba(19, 19, 19, .65);
