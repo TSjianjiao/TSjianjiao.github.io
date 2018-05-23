@@ -26,5 +26,6 @@ function getJSONP(url, cb) {
     script.setAttribute('src', url);
     document.body.appendChild(script); 
 }
+getJSONP('https://api.douban.com/v2/book/1220562', 'handleResponse')
 
 
