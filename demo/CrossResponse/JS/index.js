@@ -1,13 +1,10 @@
-// var xhr = new XMLHttpRequest();
-// xhr.open('GET', 'https://api.douban.com/v2/book/1220562');
-// xhr.send(null);
-// xhr.withCredentials
-// xhr.onload = function () {
-//     if (xhr.readyState === 4) {
-//         console.log(xhr.responseText);
-//     }
-// };
+
 var responseHandler; // 定义一个全局作用域的函数 
+/**
+ * 跨域请求
+ * @param {string} url 
+ * @param {Function} cb 
+ */
 function getJSONP(url, cb) { 
     if (url.indexOf('?') === -1) { 
         url += '?callback=responseHandler'; 
@@ -26,6 +23,7 @@ function getJSONP(url, cb) {
     script.setAttribute('src', url);
     document.body.appendChild(script); 
 }
+// 豆瓣api为例
 getJSONP('https://api.douban.com/v2/book/1220562', function (e) {console.log(e)});
 
 
