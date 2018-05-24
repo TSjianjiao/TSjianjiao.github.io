@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link rel="stylesheet" href="./CSS/index.css">
+    <title>FORM</title>
+    <link rel="stylesheet" href="./CSS/form.css">
 </head>
 <body>
-    <div class="wrapper">
-        <input id="email-input" type="text" placeholder="请输入邮箱"><i class="iconfont" id="clear-all">&#xe967;&nbsp;清除全部</i>
-        <ul id="email-sug-wrapper" class="email-sug"></ul>
+    <div id="region-radio-wrapper">
+        <input type="checkbox" check-type="option">华东
+        <input type="checkbox" check-type="option">华北
+        <input type="checkbox" check-type="option">华南
+        <input type="checkbox" check-type="all">全选
     </div>
-    <script src="./JS/step_6.js"></script>
+    <div id="product-radio-wrapper">
+        <input type="checkbox" check-type="option">手机
+        <input type="checkbox" check-type="option">笔记本
+        <input type="checkbox" check-type="option">智能音箱
+        <input type="checkbox" check-type="all">全选
+    </div>
+    <div id="table-wrapper"></div>
+    <script src="./JS/form.js"></script>
+    <script src="./JS/app.js"></script>
 </body>
 </html>
