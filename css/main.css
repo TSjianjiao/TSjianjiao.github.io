@@ -23,6 +23,9 @@ li {
     border-left: none;
     overflow: hidden;
 }
+.kitchen li {
+    float: left;
+}
 .cook {
     /* position: absolute; */
 }
@@ -37,6 +40,11 @@ li {
     border: solid 1px #000;
     border-top: none;
     overflow: hidden;
+}
+.to-do-list {
+    border: solid 1px #000;
+    border-top: none;
+    height: 80px;
 }
 /* 顾客队伍 */
 .customer-queue {

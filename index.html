@@ -17,12 +17,19 @@
     </style>
 </head>
 <body>
-    <p>程序只写了一个座位</p>
-    <button>餐厅，启动！</button>
+    <button id="addWaiter">服务员 +1</button>
+    <button id="addCook">厨师 +1</button>
+    <button id="Go">Restaurant Go!</button>
     <span class="cash">￥0</span>
+    <p style="display: float-left">
+        没写开除和菜单合并<br>
+        毕业太忙（太懒<br>
+        <a href="./description/description.html">说明</a>
+    </p>
     <div class="main-content">
         <!-- 厨房 -->
-        <div class="kitchen">
+        <div class="kitchen" id="kitchen">
+            <div class="to-do-list" id="toDoList"></div>
         </div>
         <!-- 吃饭区域 -->
         <div class="dining-area">
@@ -44,6 +51,7 @@
         </div>
     </div>
     <script src="./JS/IFErestaurant.js"></script>
+    <script src="./JS/InformationCenter.js"></script>
     <script src="./JS/dom.js"></script>
     <script src="./JS/main.js"></script>
 </body>

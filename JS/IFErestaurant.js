@@ -6,12 +6,13 @@
  * 餐厅类
  */
  class Restaurant {
-    constructor({cash = 0, seats = 0, staffList = []} = {}) {
+    constructor({cash = 0, seats = 0, staffList = []}) {
         this.cash = cash;
         this.seats = seats;
         this.staffList =staffList;
         this.dom = new restaurantDomOp();
         this.dom.updateCash(this.cash);
+        this.observer = Observer.getInstance();
     }
     // 单例接口
     static getInstance(param) {
@@ -36,7 +37,7 @@
  */
 let id = 1;//id暂时这样
  class Staff {
-    constructor ({name = '', wages = 0} = {}) {
+    constructor ({name = '', wages = 0}) {
         this.id =  id++;
         this.name = name;
         this.wages = wages;
@@ -54,23 +55,39 @@ let id = 1;//id暂时这样
     }
 }
 /**
+ * 服务员休息区(待命区)
+ */
+class WaiterRestArea {
+    constructor() {
+        this.observer = Observer.getInstance()
+        this.mealList = []
+        this.checkList = []
+    }
+}
+/**
  * 服务员类，继承自职员
  */
  class Waiter extends Staff {
     constructor ({name = '', wages = 0} = {}) {
         super(name, wages); // 使用super代替call(this) // 创造了一个这个子类的this 不然使用的是父类的this
-        this.dom = new WaiterDomOp()
+        this.name = name;
+        this.wages = wages;
+        this.dom = new WaiterDomOp();
+        this.observer = Observer.getInstance();
     }                                     
     // 服务员完成工作
     async _doneWork(order, cook) {
         //如果参数是个数组，则记录客人点菜，如果参数不是数组则是上菜行为
         if(order.length !== undefined && typeof order !== "string") {
+            this.dom.waiterDom.removeAttribute('free');
             let position = this.dom.byCook('order', cook);
             this.dom.waiterDom.setAttribute('style', `left:${position.left}px;top:${position.top}px`);
-            await delay(500);            
+            await delay(500);  
+            this.dom.waiterDom.setAttribute('free', '');          
             return true
         }
         else {
+            this.dom.waiterDom.removeAttribute('free');
             let position = this.dom.byCook('pass', cook);
             this.dom.waiterDom.setAttribute('style', `left:${position.left}px;top:${position.top}px`);
             cook.dom.removeState(); 
@@ -79,6 +96,7 @@ let id = 1;//id暂时这样
             await delay(500);
             console.log(">>>>>进行上菜<<<<<")
             this.dom.undo();
+            this.dom.waiterDom.setAttribute('free', '');
             return order.meal
         }
     }
@@ -90,14 +108,25 @@ let id = 1;//id暂时这样
         return this.instance;
     }
 }
-
+/**
+ * 后厨白板
+ */
+class ToDoList {
+    constructor() {
+        this.observer = Observer.getInstance()
+        this.list = []
+    }
+}
 /**
  * 厨师类，继承自职员
  */
  class Cook extends Staff {
-    constructor({name = '', wages = 0} = {}) {
-        super(name, wages)
-        this.dom = new CookDomOp()
+    constructor({name, wages}) {
+        super(name, wages);
+        this.name = name;
+        this.wages = wages;
+        this.dom = new CookDomOp();
+        this.observer = Observer.getInstance();
     }
     // 厨师完成工作
     async _doneWork(menu) {
@@ -126,9 +155,12 @@ let id = 1;//id暂时这样
  */
  class Customer {
     constructor(baseTime = 3){
-        this.baseTime = baseTime
-        this.order
-        this.dom = new CustomerDomOp()
+        this.baseTime = baseTime;
+        this.order;
+        this.dom = new CustomerDomOp();
+        this.observer = Observer.getInstance();
+        this.id = ++id;
+        this.promiseList = [];
     }
     // 点菜
     async _order(menu) {
@@ -143,7 +175,7 @@ let id = 1;//id暂时这样
             this.dom.updateOrderState(i)
             await delay(1000);
         }
-        this.order = orderList;
+        this.order =[...orderList];
         // 将点的菜添加到列表
         this.dom.addOrderList(this.order);
         return new Promise((resolve, reject)=>resolve(orderList))
@@ -157,12 +189,17 @@ let id = 1;//id暂时这样
         }
         this.dom.updateOrderList(meal, 'over');
         console.log('吃完', meal.name);
+        // // 都吃完了发布 ##付账消息##
+        if (!this.dom.state.childElementCount) {
+            console.log(this.dom.state.childElementCount, this.dom.emptySeat)
+            this.observer.setPublish('payBill', {index:this.dom.seatIndex, seat:this.dom.emptySeat})
+        }
         return new Promise(resolve=>resolve(true))
     }
     // 结账
     payBill() {
         let bill = 0;
-        for(x of this.order) {
+        for(let x of this.order) {
             bill += x.price;
         }
         console.log("结账",bill);

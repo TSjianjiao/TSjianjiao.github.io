@@ -21,6 +21,7 @@ class CookDomOp {
         this.cookDomFather
         this.cookState
         this.timeLeft
+        this.listObj
     }
     // 创建厨师
     createrCook(fatherObj) {
@@ -42,14 +43,16 @@ class CookDomOp {
         fatherObj.appendChild(divOvj);
         this.position = fatherObj.childElementCount * 80;
     }
-    // 添加代做列表
+    // 添加待做列表
     addCookingList(order) {
-        let listObj = this.cookDomFather.getElementsByClassName('cook-list')[0];
+        if(!order) return
+        this.cookDom.removeAttribute('free');
+        this.listObj = this.cookDomFather.getElementsByClassName('cook-list')[0];
         order.forEach(item=>{
             let itemObj = document.createElement('li')
             itemObj.innerText = item.name;
             itemObj.setAttribute('name',item.name)
-            listObj.appendChild(itemObj);
+            this.listObj.appendChild(itemObj);
         })
     }
     // 移除正在做的
@@ -81,8 +84,12 @@ class CookDomOp {
             this.cookState.innerHTML = '';
         }
     }
+    // 复位状态
+    undo() {
+        this.cookDom.removeAttribute('complete');
+        this.cookDom.setAttribute('free', '');
+    }
 }
-
 
 
 
@@ -94,6 +101,7 @@ class CustomerDomOp {
         this.emptySeat
         this.seatIndex
         this.state
+        this.customerDom
     }
     // 创建队列图标
     createrQueueItem(fatherEle) {
@@ -106,13 +114,17 @@ class CustomerDomOp {
     getEmptySeat() {
         let diningArea = document.getElementsByClassName('dining-area')[0];
         let children = [...diningArea.children];
-        for (x of children) {
-            if (x.hasAttribute('empty')) return x
+        let emptySeatsList = [];
+        for (let x of children) {
+            if (x.hasAttribute('empty')) {
+                emptySeatsList.push(x);
+            }
         }
+        return emptySeatsList
     }
     // 安排坐下
-    sitDown() {
-        this.emptySeat = this.getEmptySeat();
+    sitDown(emptySeat) {
+        this.emptySeat = emptySeat;
         this.emptySeat.innerHTML = `<svg class="icon customer-eat" aria-hidden="true">
                                         <use xlink:href="#icon-zixi"></use>
                                     </svg>`
@@ -173,6 +185,7 @@ class WaiterDomOp {
         let mainContentObj = document.getElementsByClassName('main-content')[0];
         let svgObj = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svgObj.setAttribute('class', 'icon waiter');
+        svgObj.setAttribute('free', '');
         svgObj.innerHTML = '<use xlink:href="#icon-kongcheng"></use>';
         this.waiterDom = svgObj;
         mainContentObj.appendChild(svgObj);

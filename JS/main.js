@@ -1,158 +1,284 @@
 /**
  * @file 主程序
+ * @description 
+ * 因为监听事件和发布事件分散在程序各处 看起来不太方便
+ * 因为有很多异步事件 很容易发生错误 bug找起来也很累
+ * 一定要解除监听消息 
  */
-
-// 判断座位<--------------+
-// 顾客入座               |
-// 顾客点菜-------+       |
-//                |       |
-// 服务员记录点菜<-+       |
-// 通知厨师               |
-// 做菜                   |
-// 完成做菜-------+       |  
-//               |       |        
-// 通知服务员<----+       |       
-// 上菜                   |                  
-// 顾客吃                 |                
-// 顾客吃完               |
-// 顾客队列pop------------+
-
-// 开业餐厅
+// 餐厅初始化
 const restaurant = Restaurant.getInstance({
     cash:10000,
-    seats:1,
+    seats:4,
     staffList:[]
 });
+
+// 监听 ##顾客到达## 事件（餐厅
+// id方便取消监听
+// restaurant的id是0 staff的id从1开始自动设置
+restaurant.observer.setlistener('arrive', 0, restaurantGo)
+
+// 监听 ##更新餐馆金钱## 消息
+restaurant.observer.setlistener('updateCash', 0, e => {
+    restaurant.dom.updateCash(restaurant.cash = restaurant.cash + e);
+    // 餐厅腾出空位
+    restaurant.seats += 1;
+    // 餐厅Go
+    restaurantGo();
+})
+
 // 制作菜单
 // 菜单结构 index：{name,cost,price,takeTime(ms)} 
 const menu = Menu.getInstance([
     {
-        name:'小黄鸭闹肚子',
+        name:'很好吃的菜',
         cost:1,
         price:2,
         takeTime:1
     },
     {
-        name:'心痛的感觉',
+        name:'很难吃的菜',
         cost:1,
         price:3,
         takeTime:2
     },
     {
-        name:'乱棍打死猪八戒',
+        name:'很苦的菜',
         cost:1,
         price:4,
         takeTime:3
     },
     {
-        name:'火辣辣的吻',
+        name:'很咸的菜',
         cost:1,
         price:5,
         takeTime:4
     }
 ])
-// 招聘
-const cook_1 = Cook.getInstance({
-    name:"范真香",
-    wages:1
+
+/**
+ * 增加厨师
+ */
+function addCook() {
+    const newCook = new Cook({
+        name:"cook",// name当type用 懒得加type了
+        wages:1
+    })
+    restaurant.hire(newCook);
+    const kitchen = document.getElementById('kitchen');
+    newCook.dom.createrCook(kitchen);
+    // 监听 ##烹饪消息##
+    newCook.observer.setlistener('cooking', newCook.id, async e => {
+        // 如果这个厨师是被选中的
+        if(newCook.dom.cookDom === e.dom 
+            && e.data) {
+            const index = e.data.index; // index是几号桌 方便服务员定位
+            const order = e.data.orderList;
+            newCook.dom.addCookingList(order);
+            for (let x in order) {
+                let meal = await newCook._doneWork(order[x]);
+                // 完成一项菜品 发送 ##上菜消息##
+                newCook.observer.setPublish('pass', {meal, cook:newCook, index});
+            }
+            // 烹饪完成后发布 ##索取任务##
+            newCook.dom.undo();
+            newCook.observer.setPublish('getTask', newCook.dom.cookDom);
+        }
+    });
+}
+
+// 厨房接收 ##白板任务##
+// 厨房发布 ##烹饪消息##
+const kitchen = Observer.getInstance();
+kitchen.setlistener('cooktask', -2, e => {
+    const kitchenObj = document.getElementById('kitchen');
+    // 选择一个空闲厨师 把这个厨师的dom 和点餐信息 发送出去
+    const freeCook = kitchenObj.querySelector(`svg[free='']`)
+    kitchen.setPublish('cooking', {dom:freeCook, data:e})
 })
 
-const waiter_1 = Waiter.getInstance({
-    name:"福勿郝",
-    wages:2
+// 后厨白板
+let toDoList = new ToDoList();
+toDoList.observer.setlistener('order', -1, e => {
+    const todo = document.getElementById('toDoList');
+    // 加入列表
+    const li = document.createElement('li');
+    li.setAttribute('index', e.index);
+    li.innerText = `${e.index}号桌点餐`;
+    todo.appendChild(li);
+    toDoList.list.push(e);
+    // 检查厨房有无空闲厨师
+    const kitchen = document.getElementById('kitchen');
+    if(kitchen.querySelector("svg[free='']")) {
+        // 发布 ##白板任务##
+        const item = toDoList.list.shift();
+        toDoList.observer.setPublish('cooktask', item);
+        todo.removeChild(todo.querySelector(`li[index='${item.index}']`))
+    }
 })
-restaurant.hire(waiter_1);
-restaurant.hire(cook_1);
-let kitchenObj = document.getElementsByClassName('kitchen')[0];
-// 加入厨师
-// CookDomOp.createrCook(1, kitchenObj);
-cook_1.dom.createrCook(kitchenObj)
-// 顾客队列
-let customerQueue = [];
-const customer_1 = new Customer();
-const customer_2 = new Customer();
-const customer_3 = new Customer();
-const customer_4 = new Customer();
-customerQueue.push(customer_1, customer_2, customer_3, customer_4);
-// 添加图标
-let customerQueueObj = document.getElementById('customer-queue');
-for (x of customerQueue) {
-    x.dom.createrQueueItem(customerQueueObj);
-}
-// 运转餐厅
-document.getElementsByTagName('button')[0].addEventListener('click', ()=>opening(customerQueue));
-/**
- * 餐厅运转
- * @param {array} queue 
- */
-async function opening (queue) {
-    // 保存队列
-    let customerList = [...queue];
-    // 记录客人吃完了几样菜
-    let customerDone = [];
-    waiter_1.dom.createWaiter();
-    while (restaurant.seats > 0 
-        && restaurant.cash > 0 
-        && restaurant.staffList.length > 0 
-        && customerList.length > 0) {
-        console.log(customerList)
-        // 入座
-        console.log('哟！老板来了，快请坐！')
-        restaurant.seats -= 1;
-        let curretCustomer = customerList.shift();
-        // 队列减一
-        let child = customerQueueObj.lastElementChild;
-        customerQueueObj.removeChild(child);
-        // 安排座位
-        curretCustomer.dom.sitDown()
-        waiter_1.dom.byCustomer(curretCustomer.dom.seatIndex)
-        // 点菜 耗时3s
-        console.log('老板今天吃点啥')
-        let order = [];
-        // 给客人点的菜 加上座位index 不然不知道是谁点的
-        order = await curretCustomer._order(menu);
-        // 成本
-        let cost = 0;
-        order.forEach(element => cost += element.cost);
-        console.log(order)
-        console.log('老板，请稍等')
-        // 通知厨师做菜
-        if (waiter_1._doneWork(order, cook_1)) {
-            let promiseList = [];
-            let mealList = [];
-            let timerId;
-            cook_1.dom.addCookingList(order);
-            for (let x in order) {
-                // meal和order[x]一样的
-                let meal = await cook_1._doneWork(order[x]);
-                mealList.push(meal);
-                // 通知上菜
-                waiter_1._doneWork({
-                    meal,
-                    index:curretCustomer.dom.seatIndex
-                }, cook_1);
-                // 补时间 具体原理不赘述了
-                meal.takeTime > 3 ? addTime=0 : addTime=Number(3 - meal.takeTime);
-                // 异步操作放入数组
-                await delay(300);
-                if (x === '0') promiseList.push(curretCustomer._eat(meal))
-                else promiseList.push(curretCustomer._eat(meal, addTime))
-            }
-            // 等待所有吃饭异步操作完成
-            await Promise.all(promiseList);
-            waiter_1.dom.byCustomer(curretCustomer.dom.seatIndex);
-            await delay(500)
-            const bill = curretCustomer.payBill();
-            restaurant.dom.updateCash(restaurant.cash = restaurant.cash + (bill - cost))
-            // 腾出空位
-            restaurant.seats += 1;
-            curretCustomer.dom.seatEmpty();
+// 接收 ##索取任务##
+toDoList.observer.setlistener('getTask', -1, e => {
+        const todo = document.getElementById('toDoList');
+        // 发布 ##烹饪消息##
+        if (toDoList.list.length) {
+            const item = toDoList.list.shift();
+            toDoList.observer.setPublish('cooking', {dom:e, data:item});
+            todo.removeChild(todo.querySelector(`li[index='${item.index}']`));
+        }
+})
+
+
+// 出菜窗口 发布 ##出菜任务##   
+// 出菜窗口 监听 ##传菜消息##
+const restArea = new WaiterRestArea();
+restArea.observer.setlistener('pass', -3, e => {
+    // 页面中不存在这个区域只是一个中转站
+    // 安排一个空闲的服务员
+    restArea.mealList.push(e);
+    for(let x of [...document.querySelectorAll(`svg[class~='waiter']`)]) {
+        if(x.hasAttribute('free')) {
+            const data = restArea.mealList.pop();
+            // 发送消息
+            restArea.observer.setPublish('passTask', {waiter:x, data});
+            break;
         }
     }
-    console.log('>>>>没客人了<<<<');
-    console.log('>>>>打扫打扫<<<<');
-    console.log('>>>>打烊!<<<<');
+});
+// 出菜窗口 发布 ##收账任务##   
+// 出菜窗口 监听 ##结账消息##
+restArea.observer.setlistener('payBill', -3, e => {
+    for(let x of [...document.querySelectorAll(`svg[class~='waiter']`)]) {
+        if(x.hasAttribute('free')) {
+            // 发送消息
+            restArea.observer.setPublish('accountTask', {waiter:x, seatIndex:e.index});
+            break;
+        }
+    }
+})
+/**
+ * 增加服务员
+ */
+function addWaiter() {
+    const newWaiter = new Waiter({
+        name:"waiter",
+        wages:2
+    })
+    restaurant.hire(newWaiter);
+    newWaiter.dom.createWaiter();
+    newWaiter.dom.undo();
+    // 和厨师基本上是一样的逻辑
+    newWaiter.observer.setlistener('passTask', newWaiter.id, e => {
+        if(e.waiter === newWaiter.dom.waiterDom) {
+            const meal = e.data.meal;
+            const cook = e.data.cook;
+            const index = e.data.index;
+            newWaiter._doneWork({
+                meal,
+                index,
+            }, cook);
+            // 发布 ##上菜完成消息##
+            newWaiter.observer.setPublish('eat', {meal, index})
+        }
+    });
+    // 监听 ##收账任务##
+    newWaiter.observer.setlistener('accountTask', newWaiter.id,  e => {
+        if(e.waiter === newWaiter.dom.waiterDom) {
+            newWaiter.dom.byCustomer(e.seatIndex);
+            newWaiter.dom.undo();
+        }
+    });
 }
+
+// 加入厨师
+document.getElementById('addCook').addEventListener('click', addCook);
+// 加入服务员
+document.getElementById('addWaiter').addEventListener('click', addWaiter);
+// 运转餐厅
+document.getElementById('Go').addEventListener('click', startQueue);
+
+/**
+ * 开始顾客队列 （发布顾客到达事件）
+ */
+let customerQueue = [];
+let customerQueueObj = document.getElementById('customer-queue');
+function startQueue() {
+    // 顾客队列
+    let queueLimit = 6;
+    const timerId = setInterval(()=>{
+        let customerNum = Math.floor(Math.random() * 3);
+        // 顾客队列
+        if(customerQueue.length < queueLimit) {
+            for(let i = 0; i < customerNum; i++) {
+                let newCustomer = new Customer();
+                customerQueue.push(newCustomer);
+                // 添加图标
+                newCustomer.dom.createrQueueItem(customerQueueObj);
+                // 监听 ##上菜完成消息##
+                newCustomer.observer.setlistener('eat', newCustomer.id, e => {
+                    if (newCustomer.dom.seatIndex === e.index) {
+                        const meal = e.meal;
+                        // 补时间 具体原理不赘述了
+                        // 因为吃是异步操作
+                        let addTime;
+                        meal.takeTime > 3 ? addTime = 0 : addTime = Number(3 - meal.takeTime);
+                        newCustomer._eat(meal, addTime);  
+                    }
+                });
+                // 监听 ##付账消息##
+                // 发布 ##更新餐馆金钱数消息##
+                // 付账消息是从 newCustomer._eat()内部发来的
+                newCustomer.observer.setlistener('payBill', newCustomer.id, e => {
+                    if (newCustomer.dom.emptySeat === e.seat) {
+                        // 付钱金额
+                        const bill = newCustomer.payBill();
+                        // 成本
+                        let cost = 0;
+                        newCustomer.order.forEach(element => cost += element.cost);
+                        // 腾出空位
+                        newCustomer.dom.seatEmpty();
+                        newCustomer.observer.cancelAll(newCustomer.id); // 一定要解除监听
+                        newCustomer.observer.setPublish('updateCash', (bill-cost));
+                    }
+                });
+                // 发布 ##顾客到达## 事件 (顾客
+                newCustomer.observer.setPublish('arrive', customerQueue);
+            }
+        }
+    }, 1000);
+}
+
+/**
+ * 餐厅运转
+ */
+function restaurantGo() {
+    while(restaurant.seats > 0
+        && restaurant.cash > 0
+        && customerQueue.length > 0
+        && restaurant.staffList.length > 0) {
+        console.log(customerQueue)
+        let curretCustomer = customerQueue.shift();
+        // 队列减一
+        let child = customerQueueObj.firstElementChild;
+        customerQueueObj.removeChild(child);
+        // 安排座位
+        let emptySeatList = curretCustomer.dom.getEmptySeat();
+        curretCustomer.dom.sitDown(emptySeatList.pop());
+        restaurant.seats -= 1;
+        // 点菜 异步 因为懒 没有加事件发布
+        _order(curretCustomer, menu);
+    }
+}
+
+/**
+ * 顾客点菜
+ */
+async function _order(curretCustomer, menu) {
+    // 3s点菜
+    let orderList =  await curretCustomer._order(menu);
+    // 发布 ##点菜事件## (顾客
+    // 把自己点的餐和座位序号发布
+    curretCustomer.observer.setPublish('order', {orderList,index:curretCustomer.dom.seatIndex})
+}
+
 
 /**
  * 延迟函数
