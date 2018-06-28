@@ -22,7 +22,7 @@ class Observer {
         return this.instance;
     }
     // 注册监听
-    setlistener(type, id, fn) {
+    setListener(type, id, fn) {
         // 如果没注册过 就创建一个
         if (!this.eventList[`${id}`]) {
             this.eventList[`${id}`] = [];
